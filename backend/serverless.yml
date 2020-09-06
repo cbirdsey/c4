@@ -7,7 +7,7 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs12.x
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
@@ -15,8 +15,8 @@ provider:
   environment:
     TODOS_TABLE: serverless-todo-${self:provider.stage}
     INDEX_NAME: UserIdIndex
-    S3_BUCKET: serverless-todo-images-${self:provider.stage}
-    AUTH_0_SECRET:
+    S3_BUCKET: serverless-todo-images777-${self:provider.stage}
+    SIGNED_URL_EXPIRATION: 300
 
 functions:
 
@@ -40,7 +40,7 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
-      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/UserIdIndex
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/UserIdIndex
 
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
@@ -56,7 +56,7 @@ functions:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
-   UpdateTodo:
+  UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
     events:
       - http:
@@ -70,7 +70,7 @@ functions:
           - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
-   DeleteTodo:
+  DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
     events:
       - http:
@@ -143,36 +143,36 @@ resources:
             Projection:
               ProjectionType: ALL
 
-      S3Bucket:
-        Type: AWS::S3::Bucket
-        Properties:
-          BucketName: ${self:provider.environment.S3_BUCKET}
-          CorsConfiguration:
-            CorsRules:
-              -
-                AllowedOrigins:
-                  - '*'
-                AllowedHeaders:
-                  - '*'
-                AllowedMethods:
-                  - GET
-                  - PUT
-                  - POST
-                  - DELETE
-                  - HEAD
-                MaxAge: 3000
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.S3_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            -
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000
 
-      BucketPolicy:
-        Type: AWS::S3::BucketPolicy
-        Properties:
-          PolicyDocument:
-            Id: MyPolicy
-            Version: "2012-10-17"
-            Statement:
-              - Sid: PublicReadForGetBucketObjects
-                Effect: Allow
-                Principal: '*'
-                Action: 's3:GetObject'
-                Resource: 'arn:aws:s3:::${self:provider.environment.S3_BUCKET}/*'
-          Bucket: !Ref S3Bucket
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: MyPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource: 'arn:aws:s3:::${self:provider.environment.S3_BUCKET}/*'
+        Bucket: !Ref S3Bucket
 
