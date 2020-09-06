@@ -19,6 +19,21 @@ provider:
     S3_BUCKET: serverless-todo-images777-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
+custom:
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: Todo Items Application
+        description: Todo Items
+    models:
+      - name: CreateTodoRequest
+        contentType: application/json
+        schema: ${file(src/models/create-todo-request.json)}
+      - name: UpdateTodoRequest
+        contentType: application/json
+        schema: ${file(src/models/update-todo-request.json)}
+
 functions:
 
   Auth:
