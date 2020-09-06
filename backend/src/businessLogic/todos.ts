@@ -1,6 +1,5 @@
 import * as uuid from 'uuid'
 import { TodoItem } from '../models/TodoItem'
-import { TodoUpdate } from '../models/TodoUpdate'
 import { TodoAccess } from '../dataLayer/todosAccess'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
@@ -34,7 +33,7 @@ export async function updateTodo(
   userId: string,
   todoId: string,
   updateTodoRequest: UpdateTodoRequest
-): Promise<TodoUpdate> {
+): Promise<string> {
 
   return await todoAccess.updateTodo(
     userId,

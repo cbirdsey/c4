@@ -7,7 +7,6 @@ const XAWS = AWSXRay.captureAWS(AWS)
 const logger = createLogger('TodoAccess')
 
 import { TodoItem } from '../models/TodoItem'
-import { TodoUpdate } from '../models/TodoUpdate'
 
 export class TodoAccess {
 
@@ -56,27 +55,34 @@ export class TodoAccess {
   }
 
 
-  async updateTodo(userId: string, todoId: string, name: string, dueDate: string, done: boolean): Promise<TodoUpdate> {
+  async updateTodo(userId: string, todoId: string, name: string, dueDate: string, done: boolean): Promise<string> {
 
-      const todoUpdateItem: TodoUpdate = {
-        userId: userId,
-        todoId: todoId,
-        name: name,
-        dueDate: dueDate,
-        done: done
-      }
+      logger.info('Storing updated todo: ', todoId)
 
-     logger.info('Storing updated todo: ', todoUpdateItem)
+      await this.docClient.update({
+        TableName: this.todosTable,
+        Key: {
+          todoId,
+          userId
+        },
+        UpdateExpression:
+          'set #n = :n, dueDate = :dd, done = :d',
+        ExpressionAttributeValues: {
+          ':n': name,
+          ':dd': dueDate,
+          ':d': done
+        },
+        ExpressionAttributeNames: {
+          '#n': 'name',
+        },
+        ReturnValues: 'UPDATED_OLD'
+      }).promise();
 
-      await this.docClient.put({
-         TableName: this.todosTable,
-         Item: todoUpdateItem
-       }).promise()
-
-      return todoUpdateItem
+      return ''
   }
 
-  async deleteTodo(userId: string, todoId: string): Promise<String> {
+
+  async deleteTodo(userId: string, todoId: string): Promise<string> {
 
     logger.info('Deleting todoId: ', todoId)
     await this.docClient.delete({
@@ -90,7 +96,7 @@ export class TodoAccess {
     return ''
   }
 
-   async setAttachmentUrl(userId: string, todoId: string, attachmentUrl: string): Promise<String> {
+   async setAttachmentUrl(userId: string, todoId: string, attachmentUrl: string): Promise<string> {
      logger.info('Setting attachmentUrl for todoId: ', todoId)
 
      await this.docClient.update({
